@@ -3,3 +3,30 @@ title: Data Cleaning
 format: typst
 ---
 
+```{r}
+
+library(tidyverse)
+
+sov <- read_csv("data/g24_sov_by_g24_svprec.csv")
+
+id_cols <- c("COUNTY", "FIPS", "SVPREC", "SVPREC_KEY", "GEO_TYPE")
+
+sov_clean <- sov |>
+    mutate(across(
+        .cols = -all_of(id_cols),
+        .fns = ~ as.numeric(str_replace(.x, "<10", "5"))
+    ))
+
+sov_clean <- sov_clean |>
+    mutate(CDDIST = as.integer(CDDIST))
+
+summary(sov_clean$TOTVOTE)
+range(sov_clean$CDDIST, na.rm = TRUE)
+sum(is.na(sov_clean$TOTVOTE))
+
+write_csv(sov_clean, "data/g24_sov_by_g24_svprec.csv")
+
+
+```
+
+

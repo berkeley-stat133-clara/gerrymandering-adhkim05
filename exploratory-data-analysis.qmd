@@ -3,26 +3,54 @@ title: Exploratory Data Analysis
 format: typst
 ---
 
+```{r}
+library(tidyverse)
+sov_clean <- read_csv("data/g24_sov_by_g24_svprec.csv")
+```
+
 ### Question 1
 
-Put your question here.
+What is the distribution of total votes ('TOTVOTE') across precincts?
 
 ### Answer 1
 
-Put your answer here.
+```{r}
+sov_clean |>
+    ggplot(aes(TOTVOTE)) +
+    geom_histogram(bins = 40) +
+    labs(title = "Distribution of Total Votes per Precinct")
+```
+
+Total votes are highly right-skewed. Most precincts have low-to-moderate turnout (under 500 votes), while a few aggregated units contain very large totals.
 
 ### Question 2
 
-Put your question here.
+How does total turnout vary across congressional districts?
 
 ### Answer 2
 
-Put your answer here.
+```{r}
+sov_clean |> 
+  group_by(CDDIST) |> 
+  summarize(total_votes = sum(TOTVOTE, na.rm = TRUE)) |> 
+  ggplot(aes(CDDIST, total_votes)) +
+  geom_col() +
+  labs(title = "Total Votes by Congressional District")
+```
+
+Turnout varies widely across districts, reflecting population differences. Larger urban districts show higher total votes.
 
 ### Question 3
 
-Put your question here.
+How do Democratic and Republican vote totals compare across precincts?
 
 ### Answer 3
 
-Put your answer here.
+```{r}
+sov_clean |> 
+  ggplot(aes(DEMVOTE, REPVOTE)) +
+  geom_point(alpha = 0.4) +
+  labs(title = "DEM vs REP Vote Totals per Precinct")
+```
+
+Democratic vote totals tend to exceed Republican vote totals in most precincts, though there are precincts where Republicans lead.

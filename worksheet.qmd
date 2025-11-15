@@ -1,4 +1,4 @@
----
+ ---
 title: "Practice Worksheet: Gerrymandering"
 format: typst
 ---
@@ -33,7 +33,10 @@ votes <- tibble(District = 1:5,
 Calculate the mean-median score associated with this particular district breakdown of votes.
 
 ```{r}
-# add code for Q1 here
+votes <- votes |>
+    mutate(dem_share = d_votes / (d_votes + r_votes))
+
+mean_median_score <- mean(votes$dem_share) - median(votes$dem_share)
 ```
 
 ### Q2. Efficiency Gap
@@ -44,5 +47,12 @@ Calculate the Efficiency Gap (EG) associated with this particular district break
 
 
 ```{r}
-# add code for Q2 here
+votes_waste <- votes |>
+    mutate(
+        winner = if_else(d_votes > r_votes, "D", "R"),
+        wasted_D = if_else(winner == "D", d_votes - 50, d_votes),
+        wasted_R = if_else(winner == "R", r_votes - 50, r_votes)
+    )
+
+efficiency_gap <- (sum(votes_waste$wasted_D) - sum(votes_waste$wasted_R)) / sum(votes_waste$d_votes + votes_waste$r_votes)
 ```

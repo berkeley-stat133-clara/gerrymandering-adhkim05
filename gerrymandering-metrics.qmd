@@ -5,7 +5,55 @@ format: typst
 
 ### 2024 Election Results and the 2024 District Map
 
+```{r}
+library(tidyverse)
 
+# load cleaned data
+sov_clean <- read_csv("data/g24_sov_by_g24_svprec.csv")
+
+# build two-party congressional totals per precinct
+sov_cong <- sov_clean |>
+  mutate(
+    DEM = rowSums(across(starts_with("CNGDEM")), na.rm = TRUE),
+    REP = rowSums(across(starts_with("CNGREP")), na.rm = TRUE),
+    TOTAL = DEM + REP
+  ) |>
+  filter(TOTAL > 0)
+```
+
+```{r}
+district_votes <- sov_cong |>
+  group_by(CDDIST) |>
+  summarize(
+    DEM = sum(DEM),
+    REP = sum(REP)
+  ) |>
+  mutate(
+    TOTAL = DEM + REP,
+    DEM_SHARE = DEM / TOTAL
+  )
+```
+
+```{r}
+mean_median <- mean(district_votes$DEM_SHARE) - median(district_votes$DEM_SHARE)
+mean_median
+```
+
+```{r}
+district_votes <- district_votes |>
+  mutate(
+    winner = if_else(DEM > REP, "DEM", "REP"),
+    wasted_D = if_else(winner == "DEM", DEM - (TOTAL/2 + 1), DEM),
+    wasted_R = if_else(winner == "REP", REP - (TOTAL/2 + 1), REP)
+  )
+
+total_two_party <- sum(district_votes$TOTAL)
+
+eff_gap <- (sum(district_votes$wasted_D) - sum(district_votes$wasted_R)) /
+           total_two_party
+
+eff_gap
+```
 
 ### 2024 Election Results and the proposed 2025 District Map
 
