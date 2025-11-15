@@ -26,7 +26,21 @@ sum(is.na(sov_clean$TOTVOTE))
 
 write_csv(sov_clean, "data/g24_sov_by_g24_svprec.csv")
 
-
 ```
 
+```{r}
+library(tidyverse)
+sov_clean <- read_csv("data/g24_sov_by_g24_svprec.csv")
 
+sov_cong <- sov_clean |>
+mutate(
+DEM = rowSums(across(starts_with("CNGDEM")), na.rm = TRUE),
+REP = rowSums(across(starts_with("CNGREP")), na.rm = TRUE),
+TOTAL = DEM + REP
+) |>
+filter(TOTAL > 0)
+
+set.seed(133) # for reproducibility
+sov_cong_new <- sov_cong |>
+mutate(new_dist = sample(1:52, n(), replace = TRUE))
+```

@@ -3,3 +3,41 @@ title: Dashboard
 format: dashboard
 ---
 
+
+```{r}
+library(tidyverse)
+
+# Load 2024 results from your earlier file
+sov_clean <- read_csv("data/g24_sov_by_g24_svprec.csv")
+
+# Build two-party totals per precinct
+sov_cong <- sov_clean |>
+  mutate(
+    DEM = rowSums(across(starts_with("CNGDEM")), na.rm = TRUE),
+    REP = rowSums(across(starts_with("CNGREP")), na.rm = TRUE),
+    TOTAL = DEM + REP
+  ) |>
+  filter(TOTAL > 0)
+
+# Aggregate by 2024 districts
+district_votes_2024 <- sov_cong |>
+  group_by(CDDIST) |>
+  summarize(
+    DEM = sum(DEM),
+    REP = sum(REP)
+  ) |>
+  mutate(
+    TOTAL = DEM + REP,
+    DEM_SHARE = DEM / TOTAL
+  )
+
+# Mean–median difference 2024
+mm_2024 <- mean(district_votes_2024$DEM_SHARE) -
+           median(district_votes_2024$DEM_SHARE)
+
+# Load the fake 2025 map results (created in data-cleaning.qmd)
+district_votes_2025 <- read_csv("data/district_votes_2025.csv") |>
+  mutate(DEM_SHARE = DEM / TOTAL)
+
+mm_2025 <- mean(district_votes_2025$DEM_SHARE) -
+           median(district_votes_2025$DEM_SHARE)
